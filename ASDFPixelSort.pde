@@ -7,12 +7,13 @@ int mode = 1;
 //b(16777216)
 
 PImage img;
+PImage originalImg;
 String imgFileName = "PIA15635";
 String fileType = "png";
 
 int loops = 1;
 
-int blackValue = -16000000;
+int blackValue = -16000000 + 0xff000000;
 int brigthnessValue = 60;
 int whiteValue = -13000000;
 
@@ -22,33 +23,37 @@ int column = 0;
 boolean saved = false;
 
 void setup() {
-  img = loadImage(imgFileName+"."+fileType);
-  size(img.width, img.height);
-  image(img, 0, 0);
+  originalImg = loadImage(imgFileName+"."+fileType);
+  size(originalImg.width, originalImg.height);
+  img = createImage(originalImg.width, originalImg.height, ARGB);
 }
 
 
 void draw() {
+  img.copy(originalImg, 0, 0, originalImg.width, originalImg.height, 0, 0, originalImg.width, originalImg.height);
+
+  column = 0;
+  row = 0;
+
+  img.loadPixels();
+
   while(column < width-1) {
-    img.loadPixels(); 
     sortColumn();
     column++;
-    img.updatePixels();
   }
-  
+
+  img.updatePixels();
+
   while(row < height-1) {
-    img.loadPixels(); 
     sortRow();
     row++;
-    img.updatePixels();
   }
-  
-  image(img,0,0);
+
+  image(img, 0, 0);
   if(!saved && frameCount >= loops) {
     saveFrame(imgFileName+"_"+mode+".png");
     saved = true;
     println("DONE"+frameCount);
-    System.exit(0);
   }
 }
 
@@ -57,7 +62,7 @@ void sortRow() {
   int x = 0;
   int y = row;
   int xend = 0;
-  
+
   while(xend < width-1) {
     switch(mode) {
       case 0:
@@ -75,24 +80,24 @@ void sortRow() {
       default:
         break;
     }
-    
+
     if(x < 0) break;
-    
+
     int sortLength = xend-x;
-    
+
     color[] unsorted = new color[sortLength];
     color[] sorted = new color[sortLength];
-    
+
     for(int i=0; i<sortLength; i++) {
       unsorted[i] = img.pixels[x + i + y * img.width];
     }
-    
+
     sorted = sort(unsorted);
-    
+
     for(int i=0; i<sortLength; i++) {
-      img.pixels[x + i + y * img.width] = sorted[i];      
+      img.pixels[x + i + y * img.width] = sorted[i];
     }
-    
+
     x = xend+1;
   }
 }
@@ -102,7 +107,7 @@ void sortColumn() {
   int x = column;
   int y = 0;
   int yend = 0;
-  
+
   while(yend < height-1) {
     switch(mode) {
       case 0:
@@ -120,24 +125,24 @@ void sortColumn() {
       default:
         break;
     }
-    
+
     if(y < 0) break;
-    
+
     int sortLength = yend-y;
-    
+
     color[] unsorted = new color[sortLength];
     color[] sorted = new color[sortLength];
-    
+
     for(int i=0; i<sortLength; i++) {
       unsorted[i] = img.pixels[x + (y+i) * img.width];
     }
-    
+
     sorted = sort(unsorted);
-    
+
     for(int i=0; i<sortLength; i++) {
       img.pixels[x + (y+i) * img.width] = sorted[i];
     }
-    
+
     y = yend+1;
   }
 }
